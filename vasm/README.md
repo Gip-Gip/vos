@@ -37,6 +37,7 @@ will be inserted.
 
 ### Status Operations
 | Hex Value | Opcode | Operand Type | Description |
+| = | = | = |
 | 0x21 | STT | N/A | Sets the true flag high |
 | 0x22 | SINV | N/A | Sets the true flag to the inverse of what it is now |
 | 0x23 | STEQ | N/A | Sets the true flag if the previous eval set the equal flag, otherwise set it to false |
@@ -47,12 +48,14 @@ will be inserted.
 
 ### Compare Operations 
 | Hex Value | Opcode | Operand Type | Description |
+| = | = | = |
 | 0x30 | CMPA | N/A | Clears the status register and compares the low and high registers of A |
 | 0x34 | CMPAB | N/A | Clears the status register and compares A to B |
 | 0x36 | CMPABCD | N/A | Clears the status register and compares AB to CD |
 
 ### Data Transfer Operations
 | Hex Value | Opcode | Operand Type | Description |
+| = | = | = |
 | 0x40 | LAL8 | IM-8 | Loads a byte into the low register of A |
 | 0x41 | LA16 | IM-16 | Loads two bytes into the A register |
 | 0x42 | LAB24 | IM-24 | Loads three bytes into the ABL register |
@@ -72,6 +75,7 @@ will be inserted.
 
 ### Arithmatic Operations
 | Hex Value | Opcode | Operand Type | Description |
+| = | = | = |
 | 0x50 | ADDA | N/A | Adds AL to AH and stores the result in AL |
 | 0x51 | ADDAB | N/A | Adds A to B and stores the result in A |
 | 0x52 | ADDABCD | N/A | Adds AB to CD and stores the result in AB |
@@ -87,6 +91,7 @@ will be inserted.
 
 ### Bitwise Operations 
 | Hex Value | Opcode | Operand Type | Description |
+| = | = | = |
 | 0x60 | ANDA | N/A | Performs bitwise-AND on AL and AH and stores the result in AL |
 | 0x61 | ANDAB | N/A | Performs bitwise-AND on A and B and stores the result in A |
 | 0x62 | ANDABCD | N/A | Performs bitwise-AND on AB and CD and stores the result in AB |
