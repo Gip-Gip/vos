@@ -57,7 +57,7 @@ will be inserted.
 
 ### Data Transfer Operations
 | Hex Value | Opcode | Operand Type | Description |
-| - | - | - |
+| - | - | - | - |
 | 0x40 | LAL8 | IM-8 | Loads a byte into the low register of A |
 | 0x41 | LA16 | IM-16 | Loads two bytes into the A register |
 | 0x42 | LAB24 | IM-24 | Loads three bytes into the ABL register |
