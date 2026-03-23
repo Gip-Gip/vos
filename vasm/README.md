@@ -43,6 +43,7 @@ will be inserted by the assembler.
 | 0x05 | PUSHRET | N/A | Pushes RET to the stack |
 | 0x06 | POPRET | N/A | Pops RET from the stack |
 | 0x07 | CLRSTAT | N/A | Clears the status register |
+| 0x08 | EXIT | N/A | Exit the VINT program |
 
 ### Jump Operations
 | Hex Value | Opcode | Operand Type | Description |
@@ -50,7 +51,7 @@ will be inserted by the assembler.
 | 0x10 | JP8 | IM-I8 | Moves the PC to the RET register and adds the 8-bit signed int to the program counter if true flag is set |
 | 0x11 | JP24 | IM-24 | Moves the PC to the RET register and loads the 24-bit signed int into the program counter if true flag is set |
 | 0x12 | JPCD | N/A | Moves the PC to the RET register and the lower 24 bits of the CD register into the PC register if the true flag is set |
-| 0x12 | JPRET | N/A | Moves the RET register into the PC register if the true flag is set |
+| 0x13 | JPRET | N/A | Moves the RET register into the PC register if the true flag is set |
 
 ### Status Operations
 | Hex Value | Opcode | Operand Type | Description |
@@ -99,9 +100,9 @@ will be inserted by the assembler.
 | 0x53 | SADDA | N/A | Signed-adds AL to AH and stores the result in AL |
 | 0x54 | SADDAB | N/A | Signed-adds A to B and stores the result in A |
 | 0x55 | SADDABCD | N/A | Signed-adds AB to CD and stores the result in AB |
-| 0x56 | MULA | N/A | Multiplies AL by AH and stores the result in AL |
-| 0x57 | MULAB | N/A | Multiplies A by B and stores the result in A |
-| 0x58 | MULABCD | N/A | Multiplies AB by CD and stores the result in AB |
+| 0x56 | SADDIAL | IM-8 | Signed-adds AL with an immediate |
+| 0x57 | SADDIA | IM-16 | Signed-adds A with an immediate |
+| 0x58 | SADDIAB | IM-32 | Signed-adds AB with an immadiate |
 | 0x59 | SMULA | N/A | Signed-multiplies AL by AH and stores the result in AL |
 | 0x5A | SMULAB | N/A | Signed-multiplies A by B and stores the result in A |
 | 0x5B | SMULABCD | N/A | Signed-multiplies AB by CD and stores the result in AB |

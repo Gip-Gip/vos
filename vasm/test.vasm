@@ -1,11 +1,21 @@
 _start:
-    sys 1 // System call to sumn
-    jp8 foo
-    nop
-    nop
-    jp8 _start
-    jp24 1677
+    jp8 print
+    exit
 
-foo: 
-    nop
+print:
+    lab24 string
+    swpabcd
+    lab24 0
+    laicd
+    swpabcd
+    saddiab 2
+    pshab
+    swpabcd
+    pshab
+    lal8 2
+    pshal
+    sys 0
     jpret
+
+string:
+    "Hello, World!"

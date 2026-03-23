@@ -14,6 +14,7 @@ use std::io::Error as IoError;
 
 pub const LABEL_DELEM: char = ':';
 pub const COMMENT_DELEM: &str = "//";
+pub const STRING_DELEM: char = '"';
 
 pub enum AssemblyErrorId {
     IoError(IoError),
@@ -25,6 +26,7 @@ pub enum AssemblyErrorId {
     ExcessOperands,
     InvalidOperand,
     DistantJump,
+    UnclosedString,
 }
 
 impl Display for AssemblyErrorId {
@@ -39,6 +41,7 @@ impl Display for AssemblyErrorId {
             Self::ExcessOperands => "Too many operands",
             Self::InvalidOperand => "Invalid operand",
             Self::DistantJump => "Jump is too far",
+            Self::UnclosedString => "String isn't closed",
         };
 
         write!(f, "{}", string)
@@ -113,6 +116,13 @@ impl AssemblyError {
             id: AssemblyErrorId::DistantJump,
         }
     }
+
+    pub fn unclosed_string(line_number: usize) -> Self {
+        Self {
+            line_number,
+            id: AssemblyErrorId::UnclosedString,
+        }
+    }
 }
 
 impl Display for AssemblyError {
@@ -133,12 +143,13 @@ pub enum Operand {
     U32(u32),
     I32(i32),
     Label(String),
+    Data(Vec<u8>),
 }
 
 pub struct ByteMapEntry {
     pub addr: usize,
     pub line_number: usize,
-    pub i_opcode: usize,
+    pub i_opcode: Option<usize>,
     pub operand: Operand,
 }
 
@@ -203,6 +214,40 @@ impl ByteMap {
             return Ok(());
         }
 
+        // If it starts and ends with a quotation mark, it's a string literal.
+        // String literals per standard start with a u16 that provides it's length
+        if trimmed_line.starts_with(|c: char| c == STRING_DELEM) {
+            let (string, _) = trimmed_line
+                .strip_prefix(STRING_DELEM)
+                .unwrap_or_default()
+                .split_once(STRING_DELEM)
+                .ok_or(AssemblyError::unclosed_string(line_number))?;
+
+            let string_length = string.len() as u16;
+
+            let length_len = std::mem::size_of::<u16>();
+
+            let mut string_bytes = vec![0; string_length as usize + length_len];
+
+            string_bytes[..length_len].copy_from_slice(&string_length.to_le_bytes());
+
+            string_bytes[length_len..].copy_from_slice(&string.as_bytes());
+
+            let addr = self.out_counter;
+            self.out_counter += string_bytes.len();
+
+            let entry = ByteMapEntry {
+                addr,
+                line_number,
+                i_opcode: None,
+                operand: Operand::Data(string_bytes),
+            };
+
+            self.entries.push(entry);
+
+            return Ok(());
+        }
+
         let mut tokens = trimmed_line.split_whitespace();
         let mut label_opt = None;
         let opcode_opt;
@@ -249,7 +294,20 @@ impl ByteMap {
         let mut out_stream = BufWriter::with_capacity(128, out_stream);
 
         for entry in self.entries.into_iter() {
-            let opcode_spec = &OPCODE_SPECS[entry.i_opcode];
+            let i_opcode = match entry.i_opcode {
+                Some(i) => i,
+                None => {
+                    if let Operand::Data(data) = entry.operand {
+                        out_stream
+                            .write_all(&data)
+                            .map_err(|e| AssemblyError::from_io_error(entry.line_number, e))?;
+                        continue;
+                    }
+                    unreachable!()
+                }
+            };
+
+            let opcode_spec = &OPCODE_SPECS[i_opcode];
 
             out_stream
                 .write(&[opcode_spec.hex])
@@ -273,7 +331,9 @@ impl ByteMap {
                         .get(label.as_str())
                         .ok_or(AssemblyError::unknown_label(entry.line_number))?;
                     if matches!(opcode_spec.operand_type, OperandType::AddrRel) {
-                        let rel_addr_i32 = *label_addr as i32 - entry.addr as i32;
+                        // We jump after the program counter has already been incremented
+                        // past the byte(so that jpret works correctly). Add one
+                        let rel_addr_i32 = *label_addr as i32 - (entry.addr + 1) as i32;
 
                         let rel_addr: i8 = rel_addr_i32
                             .try_into()
@@ -283,6 +343,9 @@ impl ByteMap {
                     } else {
                         out_stream.write(&label_addr.to_le_bytes()[..3])
                     }
+                }
+                Operand::Data(_) => {
+                    unreachable!()
                 }
             }
             .map_err(|e| AssemblyError::from_io_error(entry.line_number, e))?;
@@ -419,7 +482,7 @@ impl ByteMap {
         let entry = ByteMapEntry {
             addr: self.out_counter,
             line_number,
-            i_opcode,
+            i_opcode: Some(i_opcode),
             operand,
         };
 
@@ -460,7 +523,7 @@ impl<In: Read, Out: Write> Assembler<In, Out> {
         if log::log_enabled!(log::Level::Debug) {
             log::debug!("Labels:");
             for label in byte_map.label_map.iter() {
-                log::debug!("\t{}:\t{:#06x}", label.0, label.1);
+                log::debug!("\t{}:\t{:#08X}", label.0, label.1);
             }
         }
 
