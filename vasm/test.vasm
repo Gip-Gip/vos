@@ -1,11 +1,10 @@
-start:  nop
-    nop
-    nop
+_start:
     sys 1 // System call to sumn
     jp8 foo
     nop
     nop
-    jp8 start
+    jp8 _start
+    jp24 1677
 
 foo: 
     nop

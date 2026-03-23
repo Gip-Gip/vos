@@ -50,7 +50,7 @@ impl OpcodeSpec {
     }
 }
 
-pub static OPCODE_SPECS: [OpcodeSpec; 4] = [
+pub static OPCODE_SPECS: [OpcodeSpec; 5] = [
     OpcodeSpec {
         hex: 0x00,
         string: "NOP",
@@ -65,6 +65,11 @@ pub static OPCODE_SPECS: [OpcodeSpec; 4] = [
         hex: 0x10,
         string: "JP8",
         operand_type: OperandType::AddrRel,
+    },
+    OpcodeSpec {
+        hex: 0x11,
+        string: "JP24",
+        operand_type: OperandType::AddrAbs,
     },
     OpcodeSpec {
         hex: 0x12,

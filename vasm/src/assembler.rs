@@ -169,6 +169,8 @@ impl ByteMap {
         let mut in_buffer = String::with_capacity(16);
         let mut line_number: usize = 0;
 
+        self.parse_opcode("JP24", Some("_start"), 0)?;
+
         loop {
             line_number += 1;
             in_buffer.clear();
@@ -257,14 +259,14 @@ impl ByteMap {
                 Operand::None => {
                     continue;
                 }
-                Operand::U8(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::I8(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::U16(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::I16(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::U32(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::I32(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::AddrRel(x) => out_stream.write(&x.to_be_bytes()),
-                Operand::AddrAbs(x) => out_stream.write(&x.to_be_bytes()),
+                Operand::U8(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::I8(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::U16(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::I16(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::U32(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::I32(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::AddrRel(x) => out_stream.write(&x.to_le_bytes()),
+                Operand::AddrAbs(x) => out_stream.write(&x.to_le_bytes()[..3]),
                 Operand::Label(label) => {
                     let label_addr = self
                         .label_map
@@ -277,7 +279,7 @@ impl ByteMap {
                             .try_into()
                             .map_err(|_| AssemblyError::distant_jump(entry.line_number))?;
 
-                        out_stream.write(&rel_addr.to_be_bytes())
+                        out_stream.write(&rel_addr.to_le_bytes())
                     } else {
                         out_stream.write(&label_addr.to_le_bytes()[..3])
                     }
@@ -313,8 +315,14 @@ impl ByteMap {
             return Err(AssemblyError::invalid_label(line_number));
         }
 
+        // Labels cannot start with numbers
+        if label.starts_with(|c: char| c.is_numeric()) {
+            return Err(AssemblyError::invalid_label(line_number));
+        }
+
+        // Labels can only contain letters, numbers, and underscores
         for character in label.chars() {
-            if !character.is_alphanumeric() {
+            if !character.is_alphanumeric() && character != '_' {
                 return Err(AssemblyError::invalid_label(line_number));
             }
         }
@@ -350,7 +358,7 @@ impl ByteMap {
 
         let operand_str = operand_opt.unwrap_or_default();
 
-        let is_operand_label = !opcode_str.starts_with(|c: char| c.is_numeric());
+        let is_operand_label = !operand_str.starts_with(|c: char| c.is_numeric());
 
         let operand = match operand_type {
             OperandType::None => {
