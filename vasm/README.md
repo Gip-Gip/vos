@@ -1,5 +1,11 @@
 # VASM, Vintage Assembler
 
+## Syntax
+
+```asm
+label: opcode operand // comment
+```
+
 ## Registers
 
 AL/H
@@ -17,6 +23,14 @@ STAT (8-bit)
 Opcodes and operands are to be aligned in 16 bit chunks. To fix alignment, NOPs
 will be inserted.
 
+### Alignment:
+
+* **No operand**: anywhere
+* **One-byte operand**: opcode is at even alignment, operand is at odd
+* **Two-byte operand**: opcode is at odd alignment, operand is at even
+* **Three-byte operand**: opcode is at even alignment, operand is at odd
+* **Four-byte operand**: opcode is as odd alignment, operand is at even
+
 ### Misc Operations
 | Hex Value | Opcode | Operand Type | Description |
 | - | - | - | - |
@@ -25,6 +39,7 @@ will be inserted.
 | 0x02 | SWPA | N/A | Swaps the high and low bytes of A |
 | 0x03 | SWPAB | N/A | Swaps A and B |
 | 0x04 | SWPABCD | N/A | Swaps AB and CD | 
+| 0x04 | SWPSPCD | N/A | Swaps SP and CD | 
 | 0x05 | PUSHRET | N/A | Pushes RET to the stack |
 | 0x06 | POPRET | N/A | Pops RET from the stack |
 | 0x07 | CLRSTAT | N/A | Clears the status register |

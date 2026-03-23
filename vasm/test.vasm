@@ -1,0 +1,12 @@
+start:  nop
+    nop
+    nop
+    sys 1 // System call to sumn
+    jp8 foo
+    nop
+    nop
+    jp8 start
+
+foo: 
+    nop
+    jpret
