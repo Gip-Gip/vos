@@ -3,7 +3,6 @@ pub mod opcodes;
 
 use std::fs::File;
 use std::path::PathBuf;
-use std::path::absolute;
 
 use clap::Parser;
 

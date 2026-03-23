@@ -21,7 +21,7 @@ STAT (8-bit)
 ## Opcodes
 
 Opcodes and operands are to be aligned in 16 bit chunks. To fix alignment, NOPs
-will be inserted.
+will be inserted by the assembler.
 
 ### Alignment:
 
